@@ -2,7 +2,6 @@
 import numpy as np
 import pandas_datareader as web
 import pandas as pd
-from tqdm import tqdm
 import matplotlib.pyplot as plt
 
 
