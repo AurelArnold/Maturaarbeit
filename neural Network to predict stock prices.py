@@ -140,7 +140,7 @@ start_datum = '2010-01-01'
 end_datum = '2020-01-01'
 trainings_datensatz = 0.8
 benutzter_trainings_datensatz = 1
-NN_structure = [7, 13, 1]
+NN_structure = [7, 13, 13, 1]
 epochs = 100
 learning_rate = 0.01
 
