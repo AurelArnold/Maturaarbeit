@@ -35,7 +35,7 @@ class neuralNetwork:
         #zwei libraries definieren
         #"A" speichert die gewichtete Summe der inputs (oder outputs des vorherigen layer) addiert mit dem dazugehörigen bias
         self.A = {}
-        #"B" speichert die outputs der layers (sigmoid("A"))
+        #"H" speichert die outputs der layers (sigmoid("A"))
         self.H = {}
         self.H[0] = inputs.reshape(1, -1)
         for i in range(self.n_hidden + 1):
@@ -79,7 +79,7 @@ class neuralNetwork:
 
 #definieren des trainings Algorithmus
     def train(self, inputs_list, actual_values_list, epochs, learning_rate, initialise=True, display_loss=False):
-        #wenn initialise auf "True" gesetzt ist werden dei weights und biases nochmals mit zufälligen Zahlen gefüllt (wie bei __init__())
+        #wenn initialise auf "True" gesetzt ist werden die weights und biases nochmals mit zufälligen Zahlen gefüllt (wie bei __init__())
         #bei "False" kann das neural Network weiter trainiert werden
         if initialise:
             for i in range(self.n_hidden+1):
@@ -139,9 +139,10 @@ aktienkurs = 'MSFT'
 start_datum = '2010-01-01'
 end_datum = '2020-01-01'
 trainings_datensatz = 0.8
-NN_structure = [5, 21, 21, 1]
+benutzter_trainings_datensatz = 1
+NN_structure = [7, 1]
 epochs = 100
-learning_rate = 0.001
+learning_rate = 0.01
 
 #Daten mit der Library "pandas_datareader" von "Yahoo! Finance" importieren
 Daten = web.DataReader(aktienkurs, 'yahoo', start_datum, end_datum)
@@ -158,9 +159,10 @@ close = close.fillna(method = 'bfill')
 #In ein Numpy array konvertieren
 close = close.values
 
+
 #Daten in Trainings und Test Daten aufspalten
-trainings_start = 0
 trainings_ende = int(np.floor(len(close) * trainings_datensatz))
+trainings_start = int(np.floor(trainings_ende * (1 - benutzter_trainings_datensatz)))
 test_start = trainings_ende
 test_ende = len(close)
 trainings_daten = close[np.arange(trainings_start, trainings_ende),:]
@@ -190,7 +192,7 @@ for x in range(len(s_test_daten) - NN_structure[0]):
 
 
 #Neuronales Netzwerk trainieren
-nn = neuralNetwork(NN_structure[0], NN_structure[1:len(NN_structure)-2], NN_structure[len(NN_structure)-1])
+nn = neuralNetwork(NN_structure[0], NN_structure[1:len(NN_structure)-1], NN_structure[len(NN_structure)-1])
 nn.train(s_training_inputs, s_training_actual_values, epochs, learning_rate, display_loss=True)
 
 #Neuronales Netzwerk ausführen
