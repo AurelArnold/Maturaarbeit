@@ -62,7 +62,7 @@ class neuralNetwork:
         #"error" speichert den error (Fehler) jedes einzelnen Knoten
         self.error = {}
         L = self.n_hidden + 1
-        self.error[L] = (self.H[L] - actual_value)*(self.H[L] - actual_value)
+        self.error[L] = (self.H[L] - actual_value)
         for i in range (L, 0, -1):
             #"dW" ist:
             #transponierte Matrix von den outputs der vorherigen Knoten * error (des nächsten Knoten) * deriv_sigmoid(outputs der nächsten Knoten)
