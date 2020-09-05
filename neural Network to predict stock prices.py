@@ -10,20 +10,20 @@ import matplotlib.pyplot as plt
 class neuralNetwork:
 
     def __init__(self, ninputs, nhidden, noutputs = 1):
-        #anzahl Knoten pro input-, hidden-, und output layer
+        #anzahl Knoten pro Eingabe-, Verborgene-, und Ausgabe Schicht
         self.n_inputs = ninputs
         self.n_hidden = len(nhidden)
         self.n_outputs = noutputs
         self.nN_structure = [self.n_inputs] + nhidden + [self.n_outputs]
-        #weight "W" und bias "B" dictionarys definieren
+        #Gewichtungs "W" und Bias "B" dictionarys definieren
         self.W = {}
         self.B = {}
         #den dictionarys "W" und "B" werden "key: values pairs" (Schlüssel-Objekt-Paare) hinzugefügt
-        #diese entsprechen den weights und biases zwichen zwei layers
+        #diese entsprechen den Gewichtungen und Bias zwichen zwei layers
         for i in range(self.n_hidden + 1):
-            #die weights werden mit zufälligen Zahlen gefüllt, welche eine definierte Normalverteilung um den Mittelpunkt 0 aufweisen
+            #die Gewichtungen werden mit zufälligen Zahlen gefüllt, welche eine definierte Normalverteilung um den Mittelpunkt 0 aufweisen
             self.W[i + 1] = np.random.normal(0.0, pow(self.nN_structure[i], - 0.5), (self.nN_structure[i],self.nN_structure[i + 1]))
-            #die biases werden mit dem Wert 0 gefüllt
+            #die Bias werden mit dem Wert 0 gefüllt
             self.B[i + 1] = np.zeros((1,self.nN_structure[i + 1]))
 
 #die Aktivierungsfunktion wird definiert
@@ -33,45 +33,45 @@ class neuralNetwork:
 #definieren des FeedForward Algorithmus
     def feedforward(self, inputs):
         #zwei libraries definieren
-        #"A" speichert die gewichtete Summe der inputs (oder outputs des vorherigen layer) addiert mit dem dazugehörigen bias
-        self.A = {}
-        #"H" speichert die outputs der layers (sigmoid("A"))
-        self.H = {}
-        self.H[0] = inputs.reshape(1, -1)
+        #"V" speichert das Aktivierungpotenzial (die Summe der gewichteten Ausgaben von den Knoten der vorherigen Schicht, addiert mit dem dazugehörigen Bias)
+        self.V = {}
+        #"O" speichert die Ausgaben der Schicht (sigmoid("V"))
+        self.O = {}
+        self.O[0] = inputs.reshape(1, -1)
         for i in range(self.n_hidden + 1):
-            #die Gewichtete Summe der inputs berechnen und mit den bias addieren
-            self.A[i + 1] = np.matmul(self.H[i], self.W[i + 1]) + self.B[i + 1]
-            #die outputs der layers mit der sigmoid-Funktion berechnen
-            self.H[i + 1] = self.sigmoid(self.A[i + 1])
-        final_output = self.H[self.n_hidden + 1]
+            #die Summe der gewichteten Ausgaben von den Knoten der vorherigen Schicht berechnen und mit den Bias addieren
+            self.V[i + 1] = np.matmul(self.O[i], self.W[i + 1]) + self.B[i + 1]
+            #die Sigmoidfunktion auf die Ausgaben der Schicht anwenden
+            self.O[i + 1] = self.sigmoid(self.V[i + 1])
+        final_output = self.O[self.n_hidden + 1]
         return final_output
 
-#die Ableitung der sigmoid-Funktion für den backpropagation Algorithmus berechnen
+#die Ableitung der Sigmoidfunktion für den backpropagation Algorithmus berechnen
     def deriv_sigmoid(self, output):
         return output * (1 - output)
 
 #definieren des backpropagation Algorithmus
     def backpropagation(self, inputs, actual_value):
-        #die inputs werden durch den FeedForward Algorithmus gelassen
+        #die Eingaben werden durch den FeedForward Algorithmus gelassen
         self.feedforward(inputs)
         #drei libraries definieren
-        #"dW" speichert die Differenz der weights um welche diese verändert werden müssen
+        #"dW" speichert die Differenz der Gewichte um welche diese verändert werden müssen
         self.dW = {}
-        #"dB" speichert die Differenz der biases um welche diese verändert werden müssen
+        #"dB" speichert die Differenz der Bias um welche diese verändert werden müssen
         self.dB = {}
-        #"error" speichert den error (Fehler) jedes einzelnen Knoten
-        self.error = {}
+        #"E" speichert den Fehler jedes einzelnen Knoten
+        self.E = {}
         L = self.n_hidden + 1
-        self.error[L] = (self.H[L] - actual_value)
+        self.E[L] = (self.O[L] - actual_value)
         for i in range (L, 0, -1):
             #"dW" ist:
-            #transponierte Matrix von den outputs der vorherigen Knoten * error (des nächsten Knoten) * deriv_sigmoid(outputs der nächsten Knoten)
-            self.dW[i] = np.matmul(self.H[i - 1].T, np.multiply(self.error[i], self.deriv_sigmoid(self.H[i])))
+            #transponierte Matrix der Ausgaben von den Knoten der vorherigen Schicht * Fehler (von den Knoten der nächsten Schicht) * deriv_sigmoid(von den Asugben der nächsten Schicht)
+            self.dW[i] = np.matmul(self.O[i - 1].T, np.multiply(self.E[i], self.deriv_sigmoid(self.O[i])))
             #"dB" ist:
-            #error (des nächsten Knoten) * deriv_sigmoid(outputs der nächsten Knoten)
-            self.dB[i] = np.multiply(self.error[i], self.deriv_sigmoid(self.H[i]))
-            #der "error" berechnet sich aus dem error (des nächsten Knoten) multipliziert mit der transponierten Matrix der weights
-            self.error[i - 1] = np.matmul(self.error[i], self.W[i].T)
+            #Fehler (von den Knoten der nächsten Schicht) * deriv_sigmoid(von den Asugben der nächsten Schicht)
+            self.dB[i] = np.multiply(self.E[i], self.deriv_sigmoid(self.O[i]))
+            #der Fehler "E" berechnet sich aus dem Fehler (der Knoten von der nächsten Schicht) multipliziert mit der transponierten Matrix der Gewichtungen
+            self.E[i - 1] = np.matmul(self.E[i], self.W[i].T)
 
 #definieren des mean square error (mittlere quadratische Abweichung)
     def mean_squared_error(self, predictions, actual_values_list):
@@ -80,7 +80,7 @@ class neuralNetwork:
 #definieren des trainings Algorithmus
     def train(self, inputs_list, actual_values_list, epochs, learning_rate, initialise=True, display_loss=False):
         #wenn initialise auf "True" gesetzt ist werden die weights und biases nochmals mit zufälligen Zahlen gefüllt (wie bei __init__())
-        #bei "False" kann das neural Network weiter trainiert werden
+        #bei "False" kann das neurale Netzwerk weiter trainiert werden
         if initialise:
             for i in range(self.n_hidden+1):
                 self.W[i+1] = np.random.normal(0.0, pow(self.nN_structure[i], - 0.5), (self.nN_structure[i],self.nN_structure[i + 1]))
@@ -89,7 +89,7 @@ class neuralNetwork:
         #hier wird ein dictionarys definiert
         if display_loss:
             loss = {}
-        #die weights und biases werden angepasst
+        #die Gewichtungen und Bias werden angepasst
         for e in range(epochs):
             dW = {}
             dB = {}
@@ -102,7 +102,7 @@ class neuralNetwork:
                     dW[i+1] += self.dW[i+1]
                     dB[i+1] += self.dB[i+1]
             for i in range(self.n_hidden+1):
-                #die learning_rate gewichtet die Änderungen welche an den weights und biases vorgenommen wird
+                #die learning_rate gewichtet die Änderungen welche an den Gewichtungen und Bias vorgenommen wird
                 self.W[i+1] -= learning_rate * dW[i+1]
                 self.B[i+1] -= learning_rate * dB[i+1]
             #der mean square error wird ausgerechnet
