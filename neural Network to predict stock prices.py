@@ -135,14 +135,14 @@ def mape(predictions, actual_values):
 
 
 #Variabeln definieren
-aktienkurs = 'MSFT'
+aktienkurs = 'GOOG'
 start_datum = '2010-01-01'
 end_datum = '2020-01-01'
 trainings_datensatz = 0.8
 benutzter_trainings_datensatz = 1
-NN_structure = [7, 13, 13, 1]
-epochs = 100
-learning_rate = 0.01
+NN_structure = [7, 13, 13, 13, 13, 13, 13, 13, 1]
+epochs = 1000
+learning_rate = 0.001
 
 #Daten mit der Library "pandas_datareader" von "Yahoo! Finance" importieren
 Daten = web.DataReader(aktienkurs, 'yahoo', start_datum, end_datum)
