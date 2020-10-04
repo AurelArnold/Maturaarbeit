@@ -19,7 +19,7 @@ class neuronalesNetzwerk:
         self.W = {}
         self.B = {}
         #den dictionarys "W" und "B" werden "key: values pairs" (Schlüssel-Objekt-Paare) hinzugefügt
-        #diese entsprechen den Gewichtungen und Bias zwichen zwei layers
+        #diese entsprechen den Gewichtungen und Bias zwichen zwei Schichten
         for i in range(self.n_verborgen + 1):
             #die Gewichtungen werden mit zufälligen Zahlen gefüllt, welche eine definierte Normalverteilung um den Mittelpunkt 0 aufweisen
             self.W[i + 1] = np.random.normal(0.0, pow(self.nN_aufbau[i], - 0.5), (self.nN_aufbau[i],self.nN_aufbau[i + 1]))
@@ -85,7 +85,7 @@ class neuronalesNetzwerk:
             for i in range(self.n_verborgen+1):
                 self.W[i+1] = np.random.normal(0.0, pow(self.nN_aufbau[i], - 0.5), (self.nN_aufbau[i],self.nN_aufbau[i + 1]))
                 self.B[i+1] = np.zeros((1, self.nN_aufbau[i+1]))
-        #wenn display_loss auf "true"gesetzt ist, wird  ein Diagramm dargestellt mit den epochs als x-Achse und dem mean square error als y-Achse
+        #wenn display_loss auf "true"gesetzt ist, wird  ein Diagramm dargestellt mit den Wiederholungen als x-Achse und dem mean square error als y-Achse
         #hier wird ein dictionarys definiert
         if display_loss:
             loss = {}
@@ -102,7 +102,7 @@ class neuronalesNetzwerk:
                     dW[i+1] += self.dW[i+1]
                     dB[i+1] += self.dB[i+1]
             for i in range(self.n_verborgen+1):
-                #die learning_rate gewichtet die Änderungen welche an den Gewichtungen und Bias vorgenommen wird
+                #der Lernfaktor gewichtet die Änderungen welche an den Gewichtungen und Bias vorgenommen wird
                 self.W[i+1] -= lernfaktor * dW[i+1]
                 self.B[i+1] -= lernfaktor * dB[i+1]
             #der mean square error wird ausgerechnet
@@ -138,9 +138,10 @@ def mape(vorhersagen, korrekte_daten):
 aktienkurs = 'GOOG'
 start_datum = '2010-01-01'
 end_datum = '2020-01-01'
-trainings_datensatz = 0.8
-benutzter_trainings_datensatz = 1
-NN_aufbau = [7, 7, 7, 7, 1]
+test_datensatz = 0.1
+training_test_verhältniss = 80/20
+anzahl_neuronen = 2
+NN_aufbau = [7, anzahl_neuronen, anzahl_neuronen, anzahl_neuronen, 1]
 wiederholungen = 1000
 lernfaktor = 0.001
 
@@ -161,8 +162,8 @@ close = close.values
 
 
 #Daten in Trainings und Test Daten aufspalten
-trainings_ende = int(np.floor(len(close) * trainings_datensatz))
-trainings_start = int(np.floor(trainings_ende * (1 - benutzter_trainings_datensatz)))
+trainings_ende = int(np.floor(len(close) * (1-test_datensatz)))
+trainings_start = int(np.floor(len(close) * (1 - ((test_datensatz*training_test_verhältniss)+test_datensatz))))
 test_start = trainings_ende
 test_ende = len(close)
 trainings_daten = close[np.arange(trainings_start, trainings_ende),:]
@@ -172,7 +173,7 @@ test_daten = close[np.arange(test_start, test_ende),:]
 s_trainings_daten = (trainings_daten - np.amin(trainings_daten)) / (np.amax(trainings_daten) - np.amin(trainings_daten))
 s_test_daten = (test_daten - np.amin(test_daten)) / (np.amax(test_daten) - np.amin(test_daten))
 
-#die trainings inputs und die Werte zum überprüfen der Vorhersagen (actual values) werden in Form gebracht
+#die trainings Eingaben und die Werte zum überprüfen der Vorhersagen (korrekte Daten) werden in Form gebracht
 s_training_eingaben = np.zeros(((len(s_trainings_daten) - NN_aufbau[0]), NN_aufbau[0]))
 for x in range(len(s_trainings_daten) - NN_aufbau[0]):
     for i in range(NN_aufbau[0]):
@@ -181,7 +182,7 @@ s_training_korrekte_daten = np.zeros((len(s_trainings_daten) - NN_aufbau[0]))
 for x in range(len(s_trainings_daten) - NN_aufbau[0]):
   s_training_korrekte_daten[x] = s_trainings_daten[x+5]
 
-#die test inputs und die Werte zum überprüfen der Vorhersagen (actual values) werden in Form gebracht
+#die test Eingaben und die Werte zum überprüfen der Vorhersagen (korrekte Daten) werden in Form gebracht
 s_test_eingaben = np.zeros(((len(s_test_daten) - NN_aufbau[0]), NN_aufbau[0]))
 for x in range(len(s_test_daten) - NN_aufbau[0]):
     for i in range(NN_aufbau[0]):
@@ -205,17 +206,19 @@ training_korrekte_daten = s_training_korrekte_daten * (np.amax(trainings_daten) 
 test_vorhersagen = s_test_vorhersagen * (np.amax(test_daten) - np.amin(test_daten)) + np.amin(test_daten)
 test_korrekte_daten = s_test_korrekte_daten * (np.amax(test_daten) - np.amin(test_daten)) + np.amin(test_daten)
 
-#die Genauigkeit der trainings daten und der test daten mit dem rmse und dem mape berechnen
+#die Genauigkeit der trainings Daten und der test Daten mit dem rmse und dem mape berechnen
 rmse_training = rmse(training_vorhersagen, training_korrekte_daten)
 mape_training = mape(training_vorhersagen, training_korrekte_daten)
 rmse_test = rmse(test_vorhersagen, test_korrekte_daten)
 mape_test = mape(test_vorhersagen, test_korrekte_daten)
 
 #Ausgabe des Programms
+print()
 print("Deep Feedforward Neural Network zur Vorhersage von Aktien der Firma", aktienkurs)
-print("structure: ", NN_aufbau)
-print("wiederholungen: ", wiederholungen)
-print("lernfaktor: ", lernfaktor)
+print("Struktur: ", NN_aufbau)
+print("Wiederholungen: ", wiederholungen)
+print("Lernfaktor: ", lernfaktor)
+print(training_test_verhältniss)
 print()
 print("Trainingsdaten")
 print("RMSE: ", rmse_training)
