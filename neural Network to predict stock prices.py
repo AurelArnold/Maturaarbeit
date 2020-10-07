@@ -19,9 +19,9 @@ class neuronalesNetzwerk:
         self.W = {}
         self.B = {}
         #den dictionarys "W" und "B" werden "key: values pairs" (Schlüssel-Objekt-Paare) hinzugefügt
-        #diese entsprechen den Gewichtungen und Bias zwichen zwei Schichten
+        #diese entsprechen der Position zwischen zwei Schichten und den Gewichtungen und Bias an dieser Position
         for i in range(self.n_verborgen + 1):
-            #die Gewichtungen werden mit zufälligen Zahlen gefüllt, welche eine definierte Normalverteilung um den Mittelpunkt 0 aufweisen
+            #die Gewichtungen werden mit zufälligen Zahlen gefüllt, welche eine Normalverteilung vom Kehrbruch der Wurzel von den Anzahl der Eingaben des Knotens um den Mittelpunkt 0 aufweisen
             self.W[i + 1] = np.random.normal(0.0, pow(self.nN_aufbau[i], - 0.5), (self.nN_aufbau[i],self.nN_aufbau[i + 1]))
             #die Bias werden mit dem Wert 0 gefüllt
             self.B[i + 1] = np.zeros((1,self.nN_aufbau[i + 1]))
@@ -47,7 +47,7 @@ class neuronalesNetzwerk:
         return finale_ausgabe
 
 #die Ableitung der Sigmoidfunktion für den backpropagation Algorithmus berechnen
-    def deriv_sigmoid(self, ausgabe):
+    def ableitung_sigmoid(self, ausgabe):
         return ausgabe * (1 - ausgabe)
 
 #definieren des backpropagation Algorithmus
@@ -66,10 +66,10 @@ class neuronalesNetzwerk:
         for i in range (L, 0, -1):
             #"dW" ist:
             #transponierte Matrix der Ausgaben von den Knoten der vorherigen Schicht * Fehler (von den Knoten der nächsten Schicht) * deriv_sigmoid(von den Asugben der nächsten Schicht)
-            self.dW[i] = np.matmul(self.O[i - 1].T, np.multiply(self.E[i], self.deriv_sigmoid(self.O[i])))
+            self.dW[i] = np.matmul(self.O[i - 1].T, np.multiply(self.E[i], self.ableitung_sigmoid(self.O[i])))
             #"dB" ist:
             #Fehler (von den Knoten der nächsten Schicht) * deriv_sigmoid(von den Asugben der nächsten Schicht)
-            self.dB[i] = np.multiply(self.E[i], self.deriv_sigmoid(self.O[i]))
+            self.dB[i] = np.multiply(self.E[i], self.ableitung_sigmoid(self.O[i]))
             #der Fehler "E" berechnet sich aus dem Fehler (der Knoten von der nächsten Schicht) multipliziert mit der transponierten Matrix der Gewichtungen
             self.E[i - 1] = np.matmul(self.E[i], self.W[i].T)
 
@@ -79,13 +79,13 @@ class neuronalesNetzwerk:
 
 #definieren des trainings Algorithmus
     def train(self, eingabe_liste, korrekte_daten_liste, wiederholungen, lernfaktor, initialise=True, display_loss=False):
-        #wenn initialise auf "True" gesetzt ist werden die Gewichtungen und Biases nochmals mit zufälligen Zahlen gefüllt (wie bei __init__())
+        #wenn initialise auf "True" gesetzt ist werden die Gewichtungen und Biases nochmals mit zufälligen Zahlen gefüllt (wie beim Konstruktor der Klasse)
         #bei "False" kann das neurale Netzwerk weiter trainiert werden
         if initialise:
             for i in range(self.n_verborgen+1):
                 self.W[i+1] = np.random.normal(0.0, pow(self.nN_aufbau[i], - 0.5), (self.nN_aufbau[i],self.nN_aufbau[i + 1]))
                 self.B[i+1] = np.zeros((1, self.nN_aufbau[i+1]))
-        #wenn display_loss auf "true"gesetzt ist, wird  ein Diagramm dargestellt mit den Wiederholungen als x-Achse und dem mean square error als y-Achse
+        #wenn display_loss auf "true"gesetzt ist, wird  eine Grafik dargestellt mit den Wiederholungen als x-Achse und dem mean square error als y-Achse
         #hier wird ein dictionarys definiert
         if display_loss:
             loss = {}
@@ -109,7 +109,7 @@ class neuronalesNetzwerk:
             if display_loss:
                 Y_vorhersagen = self.predict(eingabe_liste)
                 loss[e] = self.mean_squared_error(Y_vorhersagen, korrekte_daten_liste)
-        #der mean square error wird in einem Diagramm dargestellt
+        #der mean square error wird in einer Grafik dargestellt
         if display_loss:
             plt.plot(list(loss.values()))
             plt.xlabel('wiederholungen')
@@ -124,14 +124,10 @@ class neuronalesNetzwerk:
             Y_vorhersagen.append(y_vorhersagen)
         return np.array(Y_vorhersagen).squeeze()
 
-#den root-mean-square error defieren
-def rmse(vorhersagen, korrekte_daten):
-    return np.sqrt(((vorhersagen - korrekte_daten) ** 2).mean())
 
 #den mean absolute percentage error definieren
 def mape(vorhersagen, korrekte_daten):
     return np.mean(np.abs((korrekte_daten - vorhersagen) / korrekte_daten)) * 100
-
 
 
 #Variabeln definieren
@@ -139,11 +135,11 @@ aktienkurs = 'GOOG'
 start_datum = '2010-01-01'
 end_datum = '2020-01-01'
 test_datensatz = 0.1
-training_test_verhältniss = 80/20
-anzahl_neuronen = 2
+training_test_verhältniss = 85/15
+anzahl_neuronen = 20
 NN_aufbau = [7, anzahl_neuronen, anzahl_neuronen, anzahl_neuronen, 1]
-wiederholungen = 1000
-lernfaktor = 0.001
+wiederholungen = 19000
+lernfaktor = 0.0025
 
 #Daten mit der Library "pandas_datareader" von "Yahoo! Finance" importieren
 Daten = web.DataReader(aktienkurs, 'yahoo', start_datum, end_datum)
@@ -157,7 +153,7 @@ close = close.reindex(alle_wochentage)
 close = close.fillna(method = 'ffill')
 #Falls es immer noch Lücken hat (an der ersten Stelle) werden diese mit dem Wert des nächsten Tages gefüllt
 close = close.fillna(method = 'bfill')
-#In ein Numpy array konvertieren
+#In ein NumPy array konvertieren
 close = close.values
 
 
@@ -197,19 +193,13 @@ nn = neuronalesNetzwerk(NN_aufbau[0], NN_aufbau[1:len(NN_aufbau)-1], NN_aufbau[l
 nn.train(s_training_eingaben, s_training_korrekte_daten, wiederholungen, lernfaktor, display_loss=True)
 
 #Neuronales Netzwerk ausführen
-s_training_vorhersagen = nn.predict(s_training_eingaben)
 s_test_vorhersagen = nn.predict(s_test_eingaben)
 
 #Skalierung rückgängig machen
-training_vorhersagen = s_training_vorhersagen * (np.amax(trainings_daten) - np.amin(trainings_daten)) + np.amin(trainings_daten)
-training_korrekte_daten = s_training_korrekte_daten * (np.amax(trainings_daten) - np.amin(trainings_daten)) + np.amin(trainings_daten)
 test_vorhersagen = s_test_vorhersagen * (np.amax(test_daten) - np.amin(test_daten)) + np.amin(test_daten)
 test_korrekte_daten = s_test_korrekte_daten * (np.amax(test_daten) - np.amin(test_daten)) + np.amin(test_daten)
 
-#die Genauigkeit der trainings Daten und der test Daten mit dem rmse und dem mape berechnen
-rmse_training = rmse(training_vorhersagen, training_korrekte_daten)
-mape_training = mape(training_vorhersagen, training_korrekte_daten)
-rmse_test = rmse(test_vorhersagen, test_korrekte_daten)
+#die Genauigkeit der Vorhersagen der test Daten mit dem MAPE berechnen
 mape_test = mape(test_vorhersagen, test_korrekte_daten)
 
 #Ausgabe des Programms
@@ -220,10 +210,5 @@ print("Wiederholungen: ", wiederholungen)
 print("Lernfaktor: ", lernfaktor)
 print(training_test_verhältniss)
 print()
-print("Trainingsdaten")
-print("RMSE: ", rmse_training)
-print("MAPE: ", mape_training, "%")
-print()
 print("Testdaten")
-print("RMSE: ", rmse_test)
 print("MAPE: ", mape_test, "%")
