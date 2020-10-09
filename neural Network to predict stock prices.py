@@ -19,7 +19,7 @@ class neuronalesNetzwerk:
         self.W = {}
         self.B = {}
         #den dictionarys "W" und "B" werden "key: values pairs" (Schlüssel-Objekt-Paare) hinzugefügt
-        #diese entsprechen der Position zwischen zwei Schichten und den Gewichtungen und Bias an dieser Position
+        #diese entsprechen der Position zwischen zwei Schichten, und den Gewichtungen und Bias an dieser Position
         for i in range(self.n_verborgen + 1):
             #die Gewichtungen werden mit zufälligen Zahlen gefüllt, welche eine Normalverteilung vom Kehrbruch der Wurzel von den Anzahl der Eingaben des Knotens um den Mittelpunkt 0 aufweisen
             self.W[i + 1] = np.random.normal(0.0, pow(self.nN_aufbau[i], - 0.5), (self.nN_aufbau[i],self.nN_aufbau[i + 1]))
@@ -132,22 +132,22 @@ def mape(vorhersagen, korrekte_daten):
 
 #Variabeln definieren
 aktienkurs = 'GOOG'
-start_datum = '2010-01-01'
-end_datum = '2020-01-01'
+startdatum = '2010-01-01'
+enddatum = '2020-01-01'
 test_datensatz = 0.1
 training_test_verhältniss = 85/15
 anzahl_neuronen = 20
 NN_aufbau = [7, anzahl_neuronen, anzahl_neuronen, anzahl_neuronen, 1]
-wiederholungen = 19000
+wiederholungen = 9000
 lernfaktor = 0.0025
 
 #Daten mit der Library "pandas_datareader" von "Yahoo! Finance" importieren
-Daten = web.DataReader(aktienkurs, 'yahoo', start_datum, end_datum)
+Daten = web.DataReader(aktienkurs, 'yahoo', startdatum, enddatum)
 #Isolieren des Börsenschluss-Preis (Close price)
 close = Daten.filter(['Close'])
 
 #Erhalten aller Wochentage
-alle_wochentage = pd.date_range(start = start_datum, end = end_datum, freq = 'B')
+alle_wochentage = pd.date_range(start = startdatum, end = enddatum, freq = 'B')
 close = close.reindex(alle_wochentage)
 #Lücken werden mit dem Wert des vorherigen Tages gefüllt
 close = close.fillna(method = 'ffill')
@@ -169,7 +169,7 @@ test_daten = close[np.arange(test_start, test_ende),:]
 s_trainings_daten = (trainings_daten - np.amin(trainings_daten)) / (np.amax(trainings_daten) - np.amin(trainings_daten))
 s_test_daten = (test_daten - np.amin(test_daten)) / (np.amax(test_daten) - np.amin(test_daten))
 
-#die trainings Eingaben und die Werte zum überprüfen der Vorhersagen (korrekte Daten) werden in Form gebracht
+#die trainings Eingaben und die Werte zum Überprüfen der Vorhersagen (korrekte Daten) werden in Form gebracht
 s_training_eingaben = np.zeros(((len(s_trainings_daten) - NN_aufbau[0]), NN_aufbau[0]))
 for x in range(len(s_trainings_daten) - NN_aufbau[0]):
     for i in range(NN_aufbau[0]):
@@ -178,7 +178,7 @@ s_training_korrekte_daten = np.zeros((len(s_trainings_daten) - NN_aufbau[0]))
 for x in range(len(s_trainings_daten) - NN_aufbau[0]):
   s_training_korrekte_daten[x] = s_trainings_daten[x+5]
 
-#die test Eingaben und die Werte zum überprüfen der Vorhersagen (korrekte Daten) werden in Form gebracht
+#die test Eingaben und die Werte zum Überprüfen der Vorhersagen (korrekte Daten) werden in Form gebracht
 s_test_eingaben = np.zeros(((len(s_test_daten) - NN_aufbau[0]), NN_aufbau[0]))
 for x in range(len(s_test_daten) - NN_aufbau[0]):
     for i in range(NN_aufbau[0]):
@@ -203,9 +203,8 @@ test_korrekte_daten = s_test_korrekte_daten * (np.amax(test_daten) - np.amin(tes
 mape_test = mape(test_vorhersagen, test_korrekte_daten)
 
 #Ausgabe des Programms
-print()
 print("Deep Feedforward Neural Network zur Vorhersage von Aktien der Firma", aktienkurs)
-print("Struktur: ", NN_aufbau)
+print("Konfiguration: ", NN_aufbau)
 print("Wiederholungen: ", wiederholungen)
 print("Lernfaktor: ", lernfaktor)
 print(training_test_verhältniss)
